@@ -14,26 +14,30 @@ repositories {
     mavenCentral()
 }
 
-dependencies {
-    constraints {
-        // Define dependency versions as constraints
-        implementation("org.apache.commons:commons-text:1.13.0")
-    }
-}
-
 testing {
     suites {
-        // Configure the built-in test suite
         val test by getting(JvmTestSuite::class) {
-            // Use JUnit Jupiter test framework
             useJUnitJupiter("5.12.1")
         }
     }
 }
 
-// Apply a specific Java toolchain to ease working on different environments.
+// Apply a specific Java toolchain to standardize the environment
 java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+// Global Test Configuration
+// This ensures all tests (unit, integration, etc.) run fast and provide clear logs.
+tasks.withType<Test>().configureEach {
+    // 1. Performance: Run tests in parallel to reduce feedback time
+    maxParallelForks = (Runtime.getRuntime().availableProcessors() / 2).coerceAtLeast(1)
+
+    // 2. Observability: Show exactly what passed/failed in the console
+    testLogging {
+        events("passed", "skipped", "failed")
+        showStandardStreams = true // Shows println() from inside tests
     }
 }
