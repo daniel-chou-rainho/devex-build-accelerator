@@ -1,0 +1,30 @@
+name: Tooling Pipeline
+
+on: [push, pull_request]
+
+jobs:
+    build-and-test:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout Code
+              uses: actions/checkout@v4
+
+            - name: Build the Build-Agent
+              # We build the exact same environment used locally
+              run: docker build -t adyen-build-agent .
+
+            - name: Run Self-Healing Build
+              # We mount the current directory so the script can write the report back to the host
+              run: |
+                  docker run --rm \
+                    -v ${{ github.workspace }}:/app \
+                    adyen-build-agent
+
+            - name: Upload Flakiness Report
+              # Only runs if the report file was created by the Python script
+              if: hashFiles('flaky_report.json') != ''
+              uses: actions/upload-artifact@v4
+              with:
+                  name: flakiness-report
+                  path: flaky_report.json
+                  retention-days: 5
