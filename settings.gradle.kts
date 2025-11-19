@@ -17,4 +17,4 @@ plugins {
 }
 
 rootProject.name = "adyen"
-include("app", "list", "utilities")
+include("payment-api", "core-banking")
